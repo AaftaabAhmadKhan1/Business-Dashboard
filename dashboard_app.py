@@ -135,11 +135,22 @@ def load_data_from_sheets(force_refresh=False):
         if 'startdate' in df.columns:
             df['startdate'] = pd.to_datetime(df['startdate'], errors='coerce')
         
-        # Convert numeric columns
+        # Convert numeric columns and optimize data types for memory
         numeric_cols = ['net_amount', 'coupondiscount', 'donationamount', 'ADD_ON_STORE']
         for col in numeric_cols:
             if col in df.columns:
                 df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+                # Use float32 instead of float64 to save memory
+                df[col] = df[col].astype('float32')
+        
+        # Optimize string columns - convert to category dtype for repeated values
+        string_cols = ['name', 'plan', 'Exam_2', 'order_type', 'batch_eligibility', 
+                      'couponcode', 'couponid', 'leader_fin', 'type_2']
+        for col in string_cols:
+            if col in df.columns and df[col].dtype == 'object':
+                # Convert to category if column has less than 50% unique values
+                if df[col].nunique() / len(df) < 0.5:
+                    df[col] = df[col].astype('category')
         
         # Remove empty rows
         df = df.dropna(how='all')

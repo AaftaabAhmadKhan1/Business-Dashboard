@@ -2,8 +2,9 @@ services:
   - type: web
     name: business-dashboard
     env: python
+    plan: starter  # 512MB RAM, upgrade to 'standard' for 2GB if needed
     buildCommand: pip install -r requirements_dashboard.txt
-    startCommand: gunicorn dashboard_app:server --bind 0.0.0.0:$PORT
+    startCommand: gunicorn dashboard_app:server --bind 0.0.0.0:$PORT --workers 1 --threads 2 --timeout 120
     envVars:
       - key: GOOGLE_CREDENTIALS
         sync: false
