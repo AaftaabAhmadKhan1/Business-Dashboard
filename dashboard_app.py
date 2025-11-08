@@ -17,6 +17,8 @@ from datetime import datetime, timedelta
 import io
 import base64
 import time
+import os
+import json
 
 # ========================================================================================================
 # CONFIGURATION
@@ -35,6 +37,25 @@ CACHE_DURATION = 300  # 5 minutes
 # DATA LOADING FUNCTION (OPTIMIZED)
 # ========================================================================================================
 
+def get_google_credentials():
+    """Get Google credentials from file or environment variable"""
+    # Try to get credentials from environment variable (for Vercel)
+    creds_json = os.getenv('GOOGLE_CREDENTIALS')
+    if creds_json:
+        try:
+            creds_dict = json.loads(creds_json)
+            scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+            return Credentials.from_service_account_info(creds_dict, scopes=scope)
+        except Exception as e:
+            print(f"Error loading credentials from environment: {e}")
+    
+    # Fallback to local file (for local development)
+    if os.path.exists(SERVICE_ACCOUNT_FILE):
+        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+        return Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=scope)
+    
+    raise Exception("No Google credentials found. Set GOOGLE_CREDENTIALS environment variable or provide service account file.")
+
 def load_data_from_sheets(force_refresh=False):
     """Load data from Google Sheets (all worksheets) with caching for performance"""
     global DATA_CACHE, CACHE_TIMESTAMP
@@ -50,8 +71,7 @@ def load_data_from_sheets(force_refresh=False):
     start_time = time.time()
     
     try:
-        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-        creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=scope)
+        creds = get_google_credentials()
         client = gspread.authorize(creds)
         
         spreadsheet = client.open_by_key(SPREADSHEET_ID)
