@@ -14,5 +14,11 @@
   ],
   "env": {
     "PYTHON_VERSION": "3.11"
+  },
+  "functions": {
+    "dashboard_app.py": {
+      "maxDuration": 60,
+      "memory": 3008
+    }
   }
 }

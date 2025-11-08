@@ -198,8 +198,17 @@ app = Dash(__name__,
             external_scripts=['https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'])
 server = app.server  # For Vercel deployment
 
-# Load initial data
-df = load_data_from_sheets()
+# Load initial data only in local development, not in serverless
+try:
+    if os.getenv('VERCEL'):
+        print("Running on Vercel - data will be loaded on first request")
+        df = pd.DataFrame()  # Empty dataframe for initialization
+    else:
+        print("Running locally - loading data now")
+        df = load_data_from_sheets()
+except Exception as e:
+    print(f"Warning: Could not load initial data: {e}")
+    df = pd.DataFrame()
 
 # ========================================================================================================
 # LAYOUT
