@@ -209,10 +209,11 @@ app = Dash(__name__,
             external_scripts=['https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'])
 server = app.server  # For Vercel deployment
 
-# Load initial data only in local development, not in serverless
+# Load initial data only in local development, not on cloud platforms
 try:
-    if os.getenv('VERCEL'):
-        print("Running on Vercel - data will be loaded on first request")
+    # Check if running on Vercel or Render (serverless/limited memory)
+    if os.getenv('VERCEL') or os.getenv('RENDER'):
+        print("Running on cloud platform - data will be loaded on first request")
         df = pd.DataFrame()  # Empty dataframe for initialization
     else:
         print("Running locally - loading data now")
