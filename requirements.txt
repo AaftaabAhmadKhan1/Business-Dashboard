@@ -1,0 +1,10 @@
+pandas
+gspread
+gspread-dataframe
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+PyYAML
+
+# Installation command (use --user flag to avoid permission errors):
+# pip install --user -r requirements.txt
